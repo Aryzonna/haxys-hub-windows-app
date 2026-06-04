@@ -277,7 +277,7 @@ function createMainWindow() {
       return { action: 'deny' };
     }
     if (url === 'appaction://install-update/') {
-      require('electron-updater').autoUpdater.quitAndInstall();
+      require('electron-updater').autoUpdater.quitAndInstall(true, true);
       return { action: 'deny' };
     }
     return { action: 'deny' };
