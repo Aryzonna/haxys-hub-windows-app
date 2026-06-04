@@ -269,13 +269,6 @@ function createMainWindow() {
 
   // ── Navigation intercept for Update Button ──────────────
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url === 'appaction://reload/') {
-      if (contentView && !contentView.webContents.isDestroyed()) {
-        contentView.webContents.reloadIgnoringCache();
-      }
-      mainWindow.webContents.executeJavaScript(`document.getElementById('update-btn').style.display = 'none';`).catch(()=>{});
-      return { action: 'deny' };
-    }
     if (url === 'appaction://install-update/') {
       require('electron-updater').autoUpdater.quitAndInstall(true, true);
       return { action: 'deny' };
@@ -284,53 +277,7 @@ function createMainWindow() {
   });
 
   // ── Version Polling ──────────────────────────────────────
-  function checkForUpdates() {
-    try {
-      const { net } = require('electron');
-      const request = net.request({
-        url: HAXYS_URL + 'version.json?_=' + Date.now(),
-        partition: SESSION_PARTITION
-      });
-      
-      request.on('response', (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-          try {
-            if (res.statusCode !== 200) throw new Error('Not 200');
-            const json = JSON.parse(data);
-            if (!knownVersionTimestamp) {
-              knownVersionTimestamp = json.timestamp;
-            } else if (json.timestamp && json.timestamp !== knownVersionTimestamp) {
-              knownVersionTimestamp = json.timestamp;
-              if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.executeJavaScript(`
-                  var btn = document.getElementById('update-btn');
-                  if (btn) btn.style.display = 'block';
-                `).catch(()=>{});
-              }
-            }
-          } catch (e) {
-            if (!knownVersionTimestamp) {
-              knownVersionTimestamp = 'not_found';
-            }
-          }
-        });
-      });
-
-      request.on('error', () => {
-        if (!knownVersionTimestamp) knownVersionTimestamp = 'not_found';
-      });
-
-      request.end();
-    } catch (err) {
-      if (!knownVersionTimestamp) knownVersionTimestamp = 'not_found';
-    }
-  }
-
-  // Check version after 5s, then every 2 minutes
-  setTimeout(checkForUpdates, 5000);
-  updatePollingInterval = setInterval(checkForUpdates, 120 * 1000);
+  // Removed: CRM now natively handles update banners internally.
 }
 
 // ── Shell HTML (titlebar with icon + name) ───────────────────────────
@@ -410,7 +357,6 @@ function getShellHTML() {
     <img src="${iconDataURI}" alt="Haxys">
     <span>Haxys Hub</span>
     <div class="spacer"></div>
-    <div id="update-btn" class="action-btn" onclick="window.open('appaction://reload/')">Recarregar Nova Versão</div>
     <div id="app-update-btn" class="action-btn" onclick="window.open('appaction://install-update/')">Atualizar o App</div>
   </div>
 </body>
