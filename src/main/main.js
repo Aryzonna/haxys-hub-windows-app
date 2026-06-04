@@ -285,35 +285,47 @@ function createMainWindow() {
 
   // ── Version Polling ──────────────────────────────────────
   function checkForUpdates() {
-    https.get(HAXYS_URL + 'version.json?_=' + Date.now(), (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          if (res.statusCode !== 200) throw new Error('Not 200');
-          const json = JSON.parse(data);
-          if (!knownVersionTimestamp) {
-            knownVersionTimestamp = json.timestamp;
-          } else if (json.timestamp && json.timestamp !== knownVersionTimestamp) {
-            knownVersionTimestamp = json.timestamp;
-            if (mainWindow && !mainWindow.isDestroyed()) {
-              mainWindow.webContents.executeJavaScript(`
-                var btn = document.getElementById('update-btn');
-                if (btn) btn.style.display = 'block';
-              `).catch(()=>{});
+    try {
+      const { net } = require('electron');
+      const request = net.request({
+        url: HAXYS_URL + 'version.json?_=' + Date.now(),
+        partition: SESSION_PARTITION
+      });
+      
+      request.on('response', (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            if (res.statusCode !== 200) throw new Error('Not 200');
+            const json = JSON.parse(data);
+            if (!knownVersionTimestamp) {
+              knownVersionTimestamp = json.timestamp;
+            } else if (json.timestamp && json.timestamp !== knownVersionTimestamp) {
+              knownVersionTimestamp = json.timestamp;
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.executeJavaScript(`
+                  var btn = document.getElementById('update-btn');
+                  if (btn) btn.style.display = 'block';
+                `).catch(()=>{});
+              }
+            }
+          } catch (e) {
+            if (!knownVersionTimestamp) {
+              knownVersionTimestamp = 'not_found';
             }
           }
-        } catch (e) {
-          // If the file doesn't exist on the very first try, mark it as 'not_found'.
-          // When it eventually appears, it will be treated as an update!
-          if (!knownVersionTimestamp) {
-            knownVersionTimestamp = 'not_found';
-          }
-        }
+        });
       });
-    }).on('error', () => {
+
+      request.on('error', () => {
+        if (!knownVersionTimestamp) knownVersionTimestamp = 'not_found';
+      });
+
+      request.end();
+    } catch (err) {
       if (!knownVersionTimestamp) knownVersionTimestamp = 'not_found';
-    });
+    }
   }
 
   // Check version after 5s, then every 2 minutes
