@@ -349,7 +349,7 @@ function getShellHTML() {
       display: flex;
       align-items: center;
       height: 38px;
-      padding: 0 12px;
+      padding: 0 150px 0 12px;
       -webkit-app-region: drag;
       user-select: none;
     }
