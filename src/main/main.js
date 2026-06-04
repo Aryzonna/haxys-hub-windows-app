@@ -367,43 +367,29 @@ function getShellHTML() {
       color: rgba(255, 255, 255, 0.85);
       letter-spacing: 0.2px;
     }
-    #update-btn {
+    .spacer {
+      flex: 1;
+      -webkit-app-region: drag;
+    }
+    .action-btn {
       display: none;
-      margin-left: auto;
-      background: #0078D4;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 4px;
+      background: rgba(0, 188, 212, 0.05);
+      color: #00bcd4;
+      border: 1px solid rgba(0, 188, 212, 0.3);
+      padding: 5px 14px;
+      border-radius: 8px;
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       -webkit-app-region: no-drag;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      transition: background 0.2s;
-    }
-    #update-btn:hover {
-      background: #005A9E;
-    }
-    #app-update-btn {
-      display: none;
+      transition: all 0.2s ease;
       margin-left: 8px;
-      background: #00bcd4; /* Cyan */
-      color: #000;
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      -webkit-app-region: no-drag;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      transition: background 0.2s;
     }
-    #app-update-btn:hover {
-      background: #00acc1;
+    .action-btn:hover {
+      background: rgba(0, 188, 212, 0.15);
+      border-color: #00bcd4;
     }
   </style>
 </head>
@@ -411,8 +397,9 @@ function getShellHTML() {
   <div class="titlebar">
     <img src="${iconDataURI}" alt="Haxys">
     <span>Haxys Hub</span>
-    <div id="update-btn" onclick="window.open('appaction://reload/')">Recarregar Nova Versão</div>
-    <div id="app-update-btn" onclick="window.open('appaction://install-update/')">Atualizar o App</div>
+    <div class="spacer"></div>
+    <div id="update-btn" class="action-btn" onclick="window.open('appaction://reload/')">Recarregar Nova Versão</div>
+    <div id="app-update-btn" class="action-btn" onclick="window.open('appaction://install-update/')">Atualizar o App</div>
   </div>
 </body>
 </html>`;

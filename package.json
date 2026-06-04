@@ -1,7 +1,7 @@
 {
   "name": "haxyshub",
   "productName": "Haxys Hub",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Haxys Hub - Plataforma de gestão empresarial",
   "main": "src/main/main.js",
   "scripts": {
