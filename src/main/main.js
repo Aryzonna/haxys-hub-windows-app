@@ -285,11 +285,12 @@ function createMainWindow() {
 
   // ── Version Polling ──────────────────────────────────────
   function checkForUpdates() {
-    https.get(HAXYS_URL + 'version.json', (res) => {
+    https.get(HAXYS_URL + 'version.json?_=' + Date.now(), (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         try {
+          if (res.statusCode !== 200) throw new Error('Not 200');
           const json = JSON.parse(data);
           if (!knownVersionTimestamp) {
             knownVersionTimestamp = json.timestamp;
@@ -302,9 +303,17 @@ function createMainWindow() {
               `).catch(()=>{});
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          // If the file doesn't exist on the very first try, mark it as 'not_found'.
+          // When it eventually appears, it will be treated as an update!
+          if (!knownVersionTimestamp) {
+            knownVersionTimestamp = 'not_found';
+          }
+        }
       });
-    }).on('error', () => {});
+    }).on('error', () => {
+      if (!knownVersionTimestamp) knownVersionTimestamp = 'not_found';
+    });
   }
 
   // Check version after 5s, then every 2 minutes
