@@ -1,7 +1,7 @@
 {
   "name": "haxyshub",
   "productName": "Haxys Hub",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Haxys Hub - Plataforma de gestão empresarial",
   "main": "src/main/main.js",
   "scripts": {
@@ -23,7 +23,7 @@
     },
     "nsis": {
       "oneClick": false,
-      "perMachine": false,
+      "perMachine": true,
       "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false,
       "shortcutName": "Haxys Hub",
