@@ -6,6 +6,13 @@ contextBridge.exposeInMainWorld('haxyshub', {
   close: () => ipcRenderer.send('window:close'),
 });
 
+// ── Bridge p/ abrir links externos no navegador do sistema ─────────
+// O frontend (lib/openExternal) chama window.electronAPI.openExternal,
+// que abre via shell.openExternal no main — sem navegar/substituir a janela.
+contextBridge.exposeInMainWorld('electronAPI', {
+  openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
+});
+
 // ── Inject custom CSS on page load ─────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   const style = document.createElement('style');

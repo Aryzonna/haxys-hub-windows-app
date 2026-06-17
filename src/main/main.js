@@ -456,4 +456,13 @@ function setupIPC() {
   ipcMain.on('window:close', () => {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
   });
+
+  // Abre links externos no navegador do sistema (bridge electronAPI.openExternal)
+  ipcMain.handle('shell:openExternal', (_event, url) => {
+    try {
+      if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+        shell.openExternal(url);
+      }
+    } catch (e) {}
+  });
 }
