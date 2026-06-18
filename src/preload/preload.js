@@ -4,6 +4,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('haxyshub', {
   minimize: () => ipcRenderer.send('window:minimize'),
   close: () => ipcRenderer.send('window:close'),
+  // Hard reload (= Ctrl+Shift+R) — usado pela tela de erro/manutenção
+  // (global-error.tsx) para recarregar o app após um deploy.
+  hardReload: () => ipcRenderer.send('window:hardReload'),
 });
 
 // ── Bridge p/ abrir links externos no navegador do sistema ─────────

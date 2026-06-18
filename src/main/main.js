@@ -457,6 +457,12 @@ function setupIPC() {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
   });
 
+  // Hard reload do conteúdo (= Ctrl+Shift+R), disparado pela tela de
+  // manutenção (global-error.tsx) após um deploy.
+  ipcMain.on('window:hardReload', () => {
+    if (typeof app.reloadContentView === 'function') app.reloadContentView();
+  });
+
   // Abre links externos no navegador do sistema (bridge electronAPI.openExternal)
   ipcMain.handle('shell:openExternal', (_event, url) => {
     try {
