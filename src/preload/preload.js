@@ -7,6 +7,11 @@ contextBridge.exposeInMainWorld('haxyshub', {
   // Hard reload (= Ctrl+Shift+R) — usado pela tela de erro/manutenção
   // (global-error.tsx) para recarregar o app após um deploy.
   hardReload: () => ipcRenderer.send('window:hardReload'),
+  // Restaura/foca a janela — chamado ao clicar numa notificação nativa do SO.
+  show: () => ipcRenderer.send('window:show'),
+  // Contador de não-lidas no ícone da taskbar. `dataUrl` = PNG da bolinha (o web
+  // app desenha), `count` = número (0 limpa).
+  setOverlayBadge: (dataUrl, count) => ipcRenderer.send('window:overlay', { dataUrl, count }),
 });
 
 // ── Bridge p/ abrir links externos no navegador do sistema ─────────

@@ -3,7 +3,7 @@
 // Electron wrapper for hub.haxys.com.br
 // ═══════════════════════════════════════════════════════════════════════
 
-const { app, BrowserWindow, ipcMain, session, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, session, shell, nativeImage } = require('electron');
 const path = require('path');
 const https = require('https');
 const { createTray } = require('./tray');
@@ -99,6 +99,11 @@ function configureSession() {
     callback({ requestHeaders: details.requestHeaders });
   });
 
+  // App first-party (hub.haxys.com.br + login Google) → concede as permissões que a
+  // página pedir, incluindo `notifications` (necessária para os avisos nativos do SO).
+  ses.setPermissionRequestHandler((_wc, _permission, callback) => callback(true));
+  ses.setPermissionCheckHandler(() => true);
+
   const chromeVersion = DESKTOP_UA.match(/Chrome\/([\d.]+)/)?.[1] || '134.0.0.0';
   console.log(`[HaxysHub] Session configured — Chrome/${chromeVersion}`);
 }
@@ -171,6 +176,10 @@ function createMainWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
+      // Mantém o renderer (e o WebSocket das notificações) vivo/sem throttle quando
+      // a janela está minimizada ou escondida na bandeja — essencial para receber
+      // e notificar em segundo plano.
+      backgroundThrottling: false,
     },
   });
 
@@ -470,5 +479,37 @@ function setupIPC() {
         shell.openExternal(url);
       }
     } catch (e) {}
+  });
+
+  // Restaura + foca a janela — clique numa notificação nativa do web app
+  // (window.haxyshub.show()).
+  ipcMain.on('window:show', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+
+  // Contador de não-lidas: overlay no ícone da barra de tarefas (bolinha estilo
+  // WhatsApp) + tooltip da bandeja. O web app envia a imagem já desenhada (o main
+  // não desenha texto). count 0 → limpa.
+  ipcMain.on('window:overlay', (_event, data) => {
+    try {
+      const count = (data && data.count) || 0;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (count > 0 && data && data.dataUrl) {
+          mainWindow.setOverlayIcon(nativeImage.createFromDataURL(data.dataUrl), `${count} não lidas`);
+        } else {
+          mainWindow.setOverlayIcon(null, '');
+        }
+      }
+      if (typeof app.setBadgeCount === 'function') app.setBadgeCount(count);
+      if (tray && !tray.isDestroyed()) {
+        tray.setToolTip(count > 0 ? `Haxys Hub — ${count} não lidas` : 'Haxys Hub');
+      }
+    } catch (e) {
+      console.log('[HaxysHub] overlay error:', e.message);
+    }
   });
 }
