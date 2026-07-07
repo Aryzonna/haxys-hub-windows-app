@@ -184,7 +184,21 @@ function createMainWindow() {
   });
 
   mainWindow.contentView.addChildView(contentView);
-  contentView.webContents.loadURL(HAXYS_URL);
+
+  // Limpa service worker + caches do webview ANTES de carregar. O SW do web app
+  // servia bundle VELHO no app desktop, então atualizações (badge, etc.) não
+  // chegavam. Só limpa 'serviceworkers'/'cachestorage' → cookies/login intactos.
+  // Depois desta versão o web app nem registra mais o SW no Electron, então isto
+  // vira praticamente no-op nas próximas aberturas.
+  session
+    .fromPartition(SESSION_PARTITION)
+    .clearStorageData({ storages: ['serviceworkers', 'cachestorage'] })
+    .catch(() => {})
+    .finally(() => {
+      if (contentView && !contentView.webContents.isDestroyed()) {
+        contentView.webContents.loadURL(HAXYS_URL);
+      }
+    });
 
   // Position the content view below the 38px titlebar
   const layoutViews = () => {
