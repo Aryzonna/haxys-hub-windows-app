@@ -512,4 +512,28 @@ function setupIPC() {
       console.log('[HaxysHub] overlay error:', e.message);
     }
   });
+
+  // Contador de não-lidas COMPOSITADO no ícone (bolinha ciano no canto inferior-
+  // ESQUERDO) — o web app envia o ícone já desenhado (logo + bolinha) e trocamos o
+  // ícone da taskbar via setIcon. Dá controle total de cor/posição, diferente do
+  // overlay do Windows (que sai cinza e é fixo à direita). count 0 → ícone original.
+  ipcMain.on('window:iconbadge', (_event, data) => {
+    try {
+      const count = (data && data.count) || 0;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (count > 0 && data && data.dataUrl) {
+          mainWindow.setIcon(nativeImage.createFromDataURL(data.dataUrl));
+        } else {
+          mainWindow.setIcon(nativeImage.createFromPath(path.join(__dirname, '../../assets/icon.png')));
+        }
+        mainWindow.setOverlayIcon(null, ''); // limpa overlay de versões anteriores
+      }
+      if (typeof app.setBadgeCount === 'function') app.setBadgeCount(count);
+      if (tray && !tray.isDestroyed()) {
+        tray.setToolTip(count > 0 ? `Haxys Hub — ${count} não lidas` : 'Haxys Hub');
+      }
+    } catch (e) {
+      console.log('[HaxysHub] iconbadge error:', e.message);
+    }
+  });
 }

@@ -12,6 +12,9 @@ contextBridge.exposeInMainWorld('haxyshub', {
   // Contador de não-lidas no ícone da taskbar. `dataUrl` = PNG da bolinha (o web
   // app desenha), `count` = número (0 limpa).
   setOverlayBadge: (dataUrl, count) => ipcRenderer.send('window:overlay', { dataUrl, count }),
+  // Ícone COMPOSITADO (logo + bolinha ciano no canto esquerdo). `dataUrl` = ícone
+  // inteiro já desenhado pelo web app; o main troca via setIcon. count 0 → restaura.
+  setIconBadge: (dataUrl, count) => ipcRenderer.send('window:iconbadge', { dataUrl, count }),
 });
 
 // ── Bridge p/ abrir links externos no navegador do sistema ─────────
